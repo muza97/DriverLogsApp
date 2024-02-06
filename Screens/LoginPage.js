@@ -1,13 +1,53 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, TextInput, Button, StyleSheet, Alert} from 'react-native';
+import * as Keychain from 'react-native-keychain';
 
 function LoginPage({navigation}) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
+  useEffect(() => {
+    const checkForToken = async () => {
+      const credentials = await Keychain.getGenericPassword();
+      if (credentials) {
+        navigation.navigate('Landing');
+      }
+    };
+    checkForToken();
+  }, [navigation]);
+
+  const handleLogin = async () => {
     if (username !== '' && password !== '') {
-      navigation.navigate('Landing');
+      try {
+        const response = await fetch('http://localhost:3300/api/login/driver', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: username,
+            password: password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.status === 200) {
+          await Keychain.setGenericPassword('userToken', data.token);
+          navigation.navigate('Landing');
+        } else {
+          Alert.alert(
+            'Login Failed',
+            data.message || 'An error occurred during login',
+          );
+        }
+      } catch (error) {
+        console.error(error);
+        Alert.alert(
+          'Network Error',
+          'Unable to connect to the server. Please try again later.',
+        );
+      }
     } else {
       Alert.alert(
         'Invalid Credentials',
