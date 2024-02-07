@@ -19,16 +19,19 @@ function LoginPage({navigation}) {
   const handleLogin = async () => {
     if (username !== '' && password !== '') {
       try {
-        const response = await fetch('http://localhost:3300/api/login/driver', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        const response = await fetch(
+          'https://api-focnoae3da-uc.a.run.app/api/login/driver',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: username,
+              password: password,
+            }),
           },
-          body: JSON.stringify({
-            email: username,
-            password: password,
-          }),
-        });
+        );
 
         const data = await response.json();
 
